@@ -156,7 +156,7 @@ const agendamentosFiltrados = computed(() => {
               <th scope="col" class="px-4 py-3 font-semibold">Congregação</th>
               <th scope="col" class="px-4 py-3 font-semibold">Tema</th>
               <th scope="col" class="px-4 py-3 font-semibold text-center">Cântico</th>
-              <th scope="col" class="px-4 py-3 font-semibold text-center hidden md:table-cell">Ações Mestra</th>
+              <th scope="col" class="px-4 py-3 font-semibold text-center hidden md:table-cell">Arquivar | Editar | Excluir</th>
             </tr>
           </thead>
           <tbody>

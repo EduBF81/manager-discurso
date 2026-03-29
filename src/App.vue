@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import NavBar from './components/layout/NavBar.vue'
 import { useAuthStore } from './stores/authStore'
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
+const route = useRoute()
+
+const showNavBar = computed(() => {
+  return authStore.isAuthenticated && route.name !== 'login'
+})
 
 onMounted(() => {
   authStore.initAuth()
@@ -12,8 +18,8 @@ onMounted(() => {
 
 <template>
   <div v-if="authStore.isInitialized" class="min-h-screen bg-gray-50">
-    <NavBar v-if="authStore.isAuthenticated" />
-    <main :class="authStore.isAuthenticated ? 'pt-8 px-4 sm:px-6 lg:px-8' : ''">
+    <NavBar v-if="showNavBar" />
+    <main :class="showNavBar ? 'pt-8 px-4 sm:px-6 lg:px-8' : ''">
       <router-view></router-view>
     </main>
   </div>
