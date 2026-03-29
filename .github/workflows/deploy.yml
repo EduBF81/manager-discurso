@@ -2,7 +2,7 @@ name: CI/CD - Deploy Manager Discurso
 
 on:
   push:
-    branches: [main] # Sempre que houver push na main, o deploy acontece
+    branches: [main]
 
 permissions:
   contents: write
@@ -14,19 +14,23 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      - name: Instalar Node.js e Dependências ⚙️
+      - name: Instalar Node.js ⚙️
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
+      - name: Instalar Dependências 📦
+        # Usamos install em vez de ci para maior compatibilidade inicial
+        run: npm install
+
       - name: Build do Projeto (Vite) 🏗️
-        run: |
-          npm ci
-          npm run build
+        # Adicionamos o comando para gerar os ficheiros de produção
+        run: npm run build
 
       - name: Deploy para GitHub Pages 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
           branch: gh-pages
+          clean: true
