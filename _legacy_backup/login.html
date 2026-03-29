@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Agenda de Discursos</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/buttons.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--main-color);
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 { margin-bottom: 20px; color: #333; }
+
+        input {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button { width: 100%; margin-top: 10px; }
+
+        .erro { color: red; font-size: 0.9em; margin-top: 10px; display: none; }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>Acesso Restrito</h2>
+        <form id="formLogin">
+            <input type="email" id="email" placeholder="O seu e-mail" required>
+            <input type="password" id="senha" placeholder="A sua palavra-passe" required>
+            <button type="submit" id="btnEntrar">Entrar</button>
+            <p class="erro" id="msgErro">Credenciais inválidas. Tente novamente.</p>
+        </form>
+    </div>
+
+    <script type="module">
+        // Importa a inicialização para garantir que o Firebase arrancou
+        import './js/firebase-config.js'; 
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+
+        const auth = getAuth();
+
+        document.getElementById('formLogin').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btnEntrar');
+            const erroMsg = document.getElementById('msgErro');
+            
+            btn.textContent = "A verificar...";
+            btn.disabled = true;
+            erroMsg.style.display = 'none';
+
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            try {
+                // Tenta fazer o login no Firebase
+                await signInWithEmailAndPassword(auth, email, senha);
+                // Se o código chegar aqui, a senha está correta. Redireciona para o sistema:
+                window.location.replace('index.html');
+            } catch (error) {
+                console.error("Erro no login:", error.code);
+                erroMsg.style.display = 'block';
+                btn.textContent = "Entrar";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

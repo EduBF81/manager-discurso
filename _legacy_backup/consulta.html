@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Agendamentos e Oradores</title>
+    <!-- Utilização de caminhos relativos -->
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/nav.css">
+    <link rel="stylesheet" href="./css/buttons.css">
+
+    <!-- Biblioteca SheetJS para exportação de Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        /* ==========================================
+           CABEÇALHO E NAVEGAÇÃO (HEADER MINIMALISTA)
+           ========================================== */
+        .site-header {
+            background-color: var(--main-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            height: 70px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .site-brand h1 {
+            color: var(--branco);
+            font-size: 1.4em;
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .main-nav a {
+            color: #d1d1d1;
+            text-decoration: none;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: color 0.2s ease, border-bottom 0.2s ease;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .main-nav a:hover,
+        .main-nav a.active {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .main-nav .btn-logout {
+            color: #ff6b6b !important;
+            border: 1px solid #ff6b6b;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .main-nav .btn-logout:hover {
+            background-color: #ff6b6b;
+            color: var(--branco) !important;
+        }
+
+        /* ESTRUTURA BASE */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1100px;
+            margin: 30px auto;
+            background: var(--bg-container);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        /* SISTEMA DE ABAS (TABS) */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-light);
+            margin-bottom: 20px;
+            gap: 5px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            color: var(--text-muted);
+            width: auto;
+            margin: 0;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: #f9f9f9;
+        }
+
+        .tab-btn.active {
+            background: var(--main-color);
+            color: var(--branco);
+            border-bottom: 2px solid var(--main-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* BARRA DE FERRAMENTAS E EXCEL */
+        .barra-ferramentas {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .caixa-pesquisa {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .caixa-pesquisa input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-size: var(--font-size);
+        }
+
+        .btn-exportar {
+            background-color: #217346;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .btn-exportar:hover {
+            background-color: #1a5c37;
+        }
+
+        /* CONFIGURAÇÃO LOCAL / VISITANTE */
+        .config-box {
+            background: #fdfdfd;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-box label {
+            margin: 0;
+            color: var(--main-color);
+            font-weight: bold;
+        }
+
+        .config-box input {
+            width: auto;
+            flex: 1;
+            min-width: 200px;
+            margin: 0;
+            height: 38px;
+            padding: 8px;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+        }
+
+        .config-box button {
+            height: 38px;
+            margin: 0;
+            width: auto;
+            padding: 0 15px;
+            background: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .config-box button:hover {
+            opacity: 0.9;
+        }
+
+        .config-help {
+            width: 100%;
+            margin: 5px 0 0 0;
+            font-size: 0.85em;
+            color: var(--text-muted);
+        }
+
+        /* BADGES (ETIQUETAS) */
+        .badge-local {
+            background-color: var(--btn-success);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .badge-visitante {
+            background-color: var(--btn-info);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        /* TABELAS GERAIS */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-table);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--main-color);
+            color: var(--branco);
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--bg-table-even);
+        }
+
+        tr:hover {
+            background-color: var(--bg-table-hover);
+        }
+
+        .estado-vazio {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .acoes-container {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .btn-acao {
+            padding: 6px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            color: var(--branco);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-editar {
+            background-color: var(--btn-warning);
+        }
+
+        .btn-editar:hover {
+            background-color: var(--btn-warning-hover);
+        }
+
+        .btn-apagar {
+            background-color: var(--btn-danger);
+        }
+
+        .btn-apagar:hover {
+            background-color: var(--btn-danger-hover);
+        }
+
+        .btn-agenda {
+            background-color: var(--btn-info);
+        }
+
+        .btn-agenda:hover {
+            background-color: var(--btn-info-hover);
+        }
+
+        .btn-email {
+            background-color: #007bff;
+        }
+
+        .btn-email:hover {
+            background-color: #0056b3;
+        }
+
+        /* RODAPÉ (FOOTER) */
+        .site-footer {
+            background-color: var(--main-color);
+            color: #d1d1d1;
+            text-align: center;
+            padding: 20px 15px;
+            margin-top: 40px;
+            font-size: 0.85em;
+            border-top: 3px solid var(--secondary-color);
+        }
+
+        .site-footer p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .footer-links {
+            margin: 10px 0;
+        }
+
+        .footer-links a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+            color: var(--branco);
+        }
+
+        .footer-credit {
+            opacity: 0.6;
+            font-size: 0.8em;
+            margin-top: 10px !important;
+        }
+
+        @media (max-width: 768px) {
+            .site-header {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .main-nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Cabeçalho Unificado -->
+    <header class="site-header">
+        <div class="site-brand">
+            <h1>🎙️ Agenda Discurso</h1>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="palestrantes.html">Oradores</a></li>
+            <li><a href="agendar.html">Agendar</a></li>
+            <li><a href="consulta.html" class="active">Consultar</a></li>
+            <li><a href="historico.html">S-99</a></li>
+            <li><a href="#" id="btnSair" class="btn-logout">Sair</a></li>
+        </ul>
+    </nav>
+
+    <main id="conteudoPrincipal" style="display: none;">
+        <h2>Painel de Consultas e Relatórios</h2>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-target="tab-agendamentos">📅 Agenda de Discursos</button>
+            <button class="tab-btn" data-target="tab-oradores">👥 Banco de Oradores</button>
+        </div>
+
+        <!-- ==========================================
+             ABA 1: AGENDAMENTOS (AGENDA)
+             ========================================== -->
+        <div id="tab-agendamentos" class="tab-content active">
+            <div class="barra-ferramentas">
+                <div class="caixa-pesquisa">
+                    <input type="text" id="inputPesquisaAgendamentos"
+                        placeholder="🔍 Pesquisar discurso por orador ou tema...">
+                </div>
+                <button id="btnExportarAgendamentos" class="btn-exportar">📥 Baixar Excel (Agenda)</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Orador</th>
+                            <th>Congregação</th>
+                            <th>Tema</th>
+                            <th>Cântico</th>
+                            <th style="width: 200px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaAgendamentos">
+                        <tr>
+                            <td colspan="6" class="estado-vazio">A carregar dados do Firebase...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             ABA 2: ORADORES (LOCAIS VS VISITANTES)
+             ========================================== -->
+        <div id="tab-oradores" class="tab-content">
+
+            <!-- Inteligência do Filtro Local/Visitante -->
+            <div class="config-box">
+                <label for="inputMinhaCongregacao">🏠 Defina sua Congregação Base:</label>
+                <input type="text" id="inputMinhaCongregacao" placeholder="Ex: LS Progresso">
+                <button id="btnSalvarMinhaCong">Aplicar Filtro</button>
+                <p class="config-help">Os oradores associados a esta congregação serão destacados como
+                    <strong>Local</strong>. Todos os outros serão <strong>Visitantes</strong>.</p>
+            </div>
+
+            <div class="barra-ferramentas">
+                <div class="caixa-pesquisa">
+                    <input type="text" id="inputPesquisaOradores"
+                        placeholder="🔍 Pesquisar orador, cidade ou congregação...">
+                </div>
+                <button id="btnExportarOradores" class="btn-exportar">📥 Baixar Excel (Oradores)</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome do Orador</th>
+                            <th style="width: 90px;">Origem</th>
+                            <th>Congregação / Cidade</th>
+                            <th>Contato</th>
+                            <th>Modalidade</th>
+                            <th style="width: 80px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaOradores">
+                        <tr>
+                            <td colspan="6" class="estado-vazio">A carregar banco de oradores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Agenda de Discursos. Todos os direitos reservados.</p>
+        <div class="footer-links">
+            <a href="mailto:eduardoborgesferreira@gmail.com?subject=Suporte Agenda">✉️ Contatar Suporte</a>
+            <span>|</span>
+            <a href="#">📖 Ajuda & Documentação</a>
+        </div>
+        <p class="footer-credit">Versão 1.0 (MVP) • Desenvolvido com dedicação para organização congregacional.</p>
+    </footer>
+
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { collection, getDocs, doc, deleteDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+
+        const auth = getAuth();
+        let agendamentosGlobais = [];
+        let oradoresGlobais = [];
+
+        // ==========================================
+        // 1. INICIALIZAÇÃO
+        // ==========================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.replace('login.html');
+            } else {
+                document.getElementById('conteudoPrincipal').style.display = 'block';
+
+                // Carrega o nome da congregação base salva no PC do utilizador (LocalStorage)
+                const congGuardada = localStorage.getItem('minhaCongregacao') || '';
+                document.getElementById('inputMinhaCongregacao').value = congGuardada;
+
+                await carregarAgendamentos();
+                await carregarOradores();
+            }
+        });
+
+        document.getElementById('btnSair').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+        });
+
+        // Lógica de Abas
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                button.classList.add('active');
+                const targetId = button.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // ==========================================
+        // 2. ABA 1: LÓGICA DE AGENDAMENTOS
+        // ==========================================
+        async function carregarAgendamentos() {
+            const tbody = document.getElementById("tabelaAgendamentos");
+            try {
+                const querySnapshot = await getDocs(collection(db, "agendamentos"));
+                agendamentosGlobais = [];
+                querySnapshot.forEach((doc) => { agendamentosGlobais.push({ id: doc.id, ...doc.data() }); });
+                agendamentosGlobais.sort((a, b) => new Date(a.dataDiscurso) - new Date(b.dataDiscurso));
+                renderizarTabelaAgendamentos(agendamentosGlobais);
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="6" class="estado-vazio" style="color: red;">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        function renderizarTabelaAgendamentos(dados) {
+            const tbody = document.getElementById("tabelaAgendamentos");
+            tbody.innerHTML = "";
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="estado-vazio">Nenhum discurso agendado.</td></tr>';
+                return;
+            }
+            dados.forEach(agendamento => {
+                const tr = document.createElement("tr");
+                const partesData = agendamento.dataDiscurso.split('-');
+                const dataF = partesData.length === 3 ? `${partesData[2]}/${partesData[1]}/${partesData[0]}` : agendamento.dataDiscurso;
+
+                tr.innerHTML = `
+                    <td><strong>${escaparHTML(dataF)}</strong></td>
+                    <td>${escaparHTML(agendamento.palestranteNome)}</td>
+                    <td>${escaparHTML(agendamento.congregacao)}</td>
+                    <td>${escaparHTML(agendamento.temaSelecionado)}</td>
+                    <td style="text-align: center;">${escaparHTML(String(agendamento.cantico))}</td>
+                    <td>
+                        <div class="acoes-container">
+                            <button class="btn-acao btn-agenda" data-id="${agendamento.id}" title="Adicionar ao Google Agenda">📅</button>
+                            <button class="btn-acao btn-email" data-id="${agendamento.id}" data-palestrante-id="${agendamento.palestranteId}" title="Enviar Lembrete">✉️</button>
+                            <button class="btn-acao btn-editar btn-editar-agd" data-id="${agendamento.id}">✏️</button>
+                            <button class="btn-acao btn-apagar btn-apagar-agd" data-id="${agendamento.id}">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('inputPesquisaAgendamentos').addEventListener('input', (e) => {
+            const termo = e.target.value.toLowerCase().trim();
+            if (!termo) return renderizarTabelaAgendamentos(agendamentosGlobais);
+            const filtrados = agendamentosGlobais.filter(a =>
+                a.palestranteNome.toLowerCase().includes(termo) ||
+                a.temaSelecionado.toLowerCase().includes(termo) ||
+                a.congregacao.toLowerCase().includes(termo)
+            );
+            renderizarTabelaAgendamentos(filtrados);
+        });
+
+        // Ações da Tabela de Agendamentos
+        document.getElementById('tabelaAgendamentos').addEventListener('click', async (e) => {
+            const btn = e.target;
+            const idDoc = btn.getAttribute('data-id');
+            if (!idDoc) return;
+            const agendamento = agendamentosGlobais.find(a => a.id === idDoc);
+
+            if (btn.classList.contains('btn-apagar-agd')) {
+                if (confirm(`Tem a certeza que deseja cancelar o discurso de ${agendamento.palestranteNome}?`)) {
+                    await deleteDoc(doc(db, "agendamentos", idDoc));
+                    carregarAgendamentos();
+                }
+            } else if (btn.classList.contains('btn-editar-agd')) {
+                window.location.href = `agendar.html?id=${idDoc}`;
+            } else if (btn.classList.contains('btn-agenda')) {
+                window.open(gerarLinkGoogleAgenda(agendamento), '_blank');
+            } else if (btn.classList.contains('btn-email')) {
+                const pId = btn.getAttribute('data-palestrante-id');
+                btn.disabled = true;
+                try {
+                    const docSnap = await getDoc(doc(db, "palestrantes", pId));
+                    if (docSnap.exists() && docSnap.data().email) {
+                        window.location.href = gerarLinkEmail(docSnap.data().email, agendamento);
+                    } else {
+                        alert(`O orador ${agendamento.palestranteNome} não tem e-mail registado.`);
+                    }
+                } catch (erro) { alert("Erro ao buscar e-mail."); }
+                finally { btn.disabled = false; }
+            }
+        });
+
+        // ==========================================
+        // 3. ABA 2: LÓGICA DE ORADORES (LOCAIS VS VISITANTES)
+        // ==========================================
+
+        // Salva a configuração de origem e recarrega a tabela
+        document.getElementById('btnSalvarMinhaCong').addEventListener('click', () => {
+            const val = document.getElementById('inputMinhaCongregacao').value.trim();
+            localStorage.setItem('minhaCongregacao', val);
+            renderizarTabelaOradores(oradoresGlobais); // Refaz o render para aplicar a etiqueta
+            alert(`A sua congregação foi definida como: ${val || 'Nenhuma'}`);
+        });
+
+        async function carregarOradores() {
+            const tbody = document.getElementById("tabelaOradores");
+            try {
+                const querySnapshot = await getDocs(collection(db, "palestrantes"));
+                oradoresGlobais = [];
+                querySnapshot.forEach((doc) => { oradoresGlobais.push({ id: doc.id, ...doc.data() }); });
+
+                // Ordem alfabética
+                oradoresGlobais.sort((a, b) => a.nome.localeCompare(b.nome));
+                renderizarTabelaOradores(oradoresGlobais);
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="6" class="estado-vazio" style="color: red;">Erro ao carregar oradores.</td></tr>';
+            }
+        }
+
+        function renderizarTabelaOradores(dados) {
+            const tbody = document.getElementById("tabelaOradores");
+            tbody.innerHTML = "";
+
+            // Pega a string de configuração salva e deixa em minúsculas para comparar
+            const minhaCong = (localStorage.getItem('minhaCongregacao') || '').toLowerCase().trim();
+
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="estado-vazio">Nenhum orador registado.</td></tr>';
+                return;
+            }
+            dados.forEach(orador => {
+                const tr = document.createElement("tr");
+                const congNome = orador.congregacaoNome || orador.congregacao || '';
+
+                // INTELIGÊNCIA: Verifica se é da mesma congregação
+                let tipo = "Visitante";
+                let badgeClass = "badge-visitante";
+
+                if (minhaCong && congNome.toLowerCase() === minhaCong) {
+                    tipo = "Local";
+                    badgeClass = "badge-local";
+                }
+
+                tr.innerHTML = `
+                    <td><strong>${escaparHTML(orador.nome)}</strong></td>
+                    <td><span class="${badgeClass}">${tipo}</span></td>
+                    <td>${escaparHTML(congNome)}<br><small style="color: #777;">${escaparHTML(orador.cidadeOrador || '')}</small></td>
+                    <td>${escaparHTML(orador.telefone)}</td>
+                    <td>${escaparHTML(orador.modalidade || '-')}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-acao btn-editar btn-editar-orador" data-id="${orador.id}" title="Editar Perfil">✏️</button>
+                        <button class="btn-acao btn-apagar btn-apagar-orador" data-id="${orador.id}" title="Apagar Perfil">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('inputPesquisaOradores').addEventListener('input', (e) => {
+            const termo = e.target.value.toLowerCase().trim();
+            if (!termo) return renderizarTabelaOradores(oradoresGlobais);
+
+            const filtrados = oradoresGlobais.filter(o =>
+                o.nome.toLowerCase().includes(termo) ||
+                (o.congregacaoNome && o.congregacaoNome.toLowerCase().includes(termo)) ||
+                (o.cidadeOrador && o.cidadeOrador.toLowerCase().includes(termo))
+            );
+            renderizarTabelaOradores(filtrados);
+        });
+
+        // Ações da Tabela de Oradores
+        document.getElementById('tabelaOradores').addEventListener('click', async (e) => {
+            const btnApagar = e.target.closest('.btn-apagar-orador');
+            const btnEditar = e.target.closest('.btn-editar-orador');
+
+            if (btnApagar) {
+                const idDoc = btnApagar.getAttribute('data-id');
+                if (confirm("Deseja apagar este Orador? O histórico de discursos dele não será perdido.")) {
+                    await deleteDoc(doc(db, "palestrantes", idDoc));
+                    carregarOradores();
+                }
+            } else if (btnEditar) {
+                const idDoc = btnEditar.getAttribute('data-id');
+                // Deixando preparado para a próxima fase! (RF5)
+                alert("Redirecionamento para edição de perfil será feito aqui! (ID: " + idDoc + ")");
+                window.location.href = `palestrantes.html?id=${idDoc}`;
+            }
+        });
+
+
+        // ==========================================
+        // 4. LÓGICA DE EXPORTAÇÃO EXCEL (SheetJS)
+        // ==========================================
+
+        document.getElementById('btnExportarAgendamentos').addEventListener('click', () => {
+            if (agendamentosGlobais.length === 0) return alert("Não há agendamentos para exportar.");
+
+            const dadosExcel = agendamentosGlobais.map(a => {
+                const pData = a.dataDiscurso.split('-');
+                return {
+                    "Data": pData.length === 3 ? `${pData[2]}/${pData[1]}/${pData[0]}` : a.dataDiscurso,
+                    "Orador": a.palestranteNome,
+                    "Congregação": a.congregacao,
+                    "Tema Selecionado": a.temaSelecionado,
+                    "Cântico": a.cantico
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+            worksheet['!cols'] = [{ wch: 15 }, { wch: 30 }, { wch: 25 }, { wch: 40 }, { wch: 10 }];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Agendamentos");
+            XLSX.writeFile(workbook, `Agendamentos_${new Date().toISOString().split('T')[0]}.xlsx`);
+        });
+
+        document.getElementById('btnExportarOradores').addEventListener('click', () => {
+            if (oradoresGlobais.length === 0) return alert("Não há oradores para exportar.");
+
+            const minhaCong = (localStorage.getItem('minhaCongregacao') || '').toLowerCase().trim();
+
+            const dadosExcel = oradoresGlobais.map(o => {
+                const congNome = o.congregacaoNome || o.congregacao || '';
+                const tipo = (minhaCong && congNome.toLowerCase() === minhaCong) ? "Local" : "Visitante";
+                const temasTxt = o.temas ? o.temas.map(t => `Nº ${t.numero} - ${t.titulo}`).join(" \n ") : "";
+
+                return {
+                    "Nome do Orador": o.nome,
+                    "Classificação": tipo,
+                    "Congregação": congNome,
+                    "Cidade/Estado": o.cidadeOrador || "-",
+                    "Telefone": o.telefone,
+                    "E-mail": o.email || "-",
+                    "Modalidade": o.modalidade || "-",
+                    "Idioma": o.idioma || "-",
+                    "Temas Cadastrados": temasTxt
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+            // Ajuste de largura das colunas
+            worksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 18 }, { wch: 15 }, { wch: 60 }];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Banco de Oradores");
+            XLSX.writeFile(workbook, `Oradores_${new Date().toISOString().split('T')[0]}.xlsx`);
+        });
+
+        // ==========================================
+        // 5. FUNÇÕES AUXILIARES
+        // ==========================================
+        function escaparHTML(texto) {
+            if (!texto) return "";
+            const div = document.createElement('div');
+            div.textContent = texto;
+            return div.innerHTML;
+        }
+
+        function gerarLinkGoogleAgenda(a) {
+            const dataLimpa = a.dataDiscurso.replace(/-/g, '');
+            const url = new URL('https://calendar.google.com/calendar/render');
+            url.searchParams.append('action', 'TEMPLATE');
+            url.searchParams.append('text', `Discurso: ${a.palestranteNome}`);
+            url.searchParams.append('dates', `${dataLimpa}/${dataLimpa}`);
+            url.searchParams.append('details', `Orador: ${a.palestranteNome}\nTema: ${a.temaSelecionado}\nCântico: ${a.cantico}`);
+            url.searchParams.append('location', a.congregacao);
+            return url.toString();
+        }
+
+        function gerarLinkEmail(email, a) {
+            const p = a.dataDiscurso.split('-');
+            const dataF = p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : a.dataDiscurso;
+            const assunto = encodeURIComponent(`Lembrete de Discurso: ${dataF}`);
+            const corpo = encodeURIComponent(`Olá irmão ${a.palestranteNome},\n\nLembrete para o seu discurso agendado para ${dataF}.\nTema: ${a.temaSelecionado}\n\nObrigado!`);
+            return `mailto:${email}?subject=${assunto}&body=${corpo}`;
+        }
+    </script>
+</body>
+
+</html>

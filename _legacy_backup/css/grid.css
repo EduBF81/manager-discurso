@@ -1,0 +1,10 @@
+        .container {
+            /* inicia o grid */
+            display: grid;
+            /* define quantas colunas o grid terá */
+            grid-template-columns: 100px 50px 80px 200px;
+            /* define quantas linhas o grid terá */
+            grid-template-rows: 80px 100px 100px;
+            gap:10px;
+
+        }

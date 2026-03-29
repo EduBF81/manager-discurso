@@ -1,0 +1,4 @@
+google sheets implantação
+autorização: AKfycbxIwDY7NrVcg0T6_z90YJCG_9EgJxYZZs1IgAlABFZePIBbHaMJH78ZJ77wL0M6JaFdcg
+app web
+url:https://script.google.com/macros/s/AKfycbzPqrMIuQpfc5FBni2uaIaVMBy_r6xCZDGuDBTrzMN0b8YDkg0Ukc43Jhe6WFQlYXlI/exec

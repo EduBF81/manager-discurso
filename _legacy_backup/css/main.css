@@ -1,0 +1,63 @@
+/* DESIGN SYSTEM - VARIÁVEIS CSS GLOBAIS
+   Todas as cores e medidas estruturais devem ser definidas aqui.
+*/
+:root {
+    /* Cores da Marca */
+    --main-color: #002327;
+    --secondary-color: #2ecc71;
+    --dourado: #FFD700;
+    --link: #0C383D;
+
+    /* Cores de Fundo (Backgrounds) */
+    --bg-body: #f5f5f5;
+    --bg-container: #ffffff;
+    --bg-table-even: #f9f9f9;
+    --bg-table-hover: #f1f1f1;
+
+    /* Cores de Texto */
+    --text-main: #333333;
+    --text-muted: #777777;
+    --branco: #ffffff;
+
+    /* Cores de Bordas e Linhas */
+    --border-light: #cccccc;
+    --border-table: #dddddd;
+
+    /* Cores Semânticas de Ação (Botões e Alertas) */
+    --btn-warning: #f0ad4e;
+    --btn-warning-hover: #ec971f;
+    --btn-danger: #d9534f;
+    --btn-danger-hover: #c9302c;
+    --btn-success: #217346;
+    --btn-success-hover: #1a5c37;
+
+    /* Novas Cores para Lembretes */
+    --btn-info: #17a2b8;
+    --btn-info-hover: #138496;
+    --btn-primary: #007bff;
+    --btn-primary-hover: #0056b3;
+
+    /* Tipografia e Medidas */
+    --font-size: 16px;
+}
+
+/* Reset Global de CSS */
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+/* Estilo Base da Página */
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    height: 80px;
+    background-color: var(--main-color);
+}

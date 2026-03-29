@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de preenchimento</title>
+    <link rel="stylesheet" href="/agenda-discurso/css/main.css">
+    <link rel="stylesheet" href="/agenda-discurso/css/nav.css">
+    <link rel="stylesheet" href="/agenda-discurso/css/buttons.css">
+    <style>
+        /* Container principal */
+        main {
+            max-width: 800px;
+            margin: 10px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Títulos */
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        fieldset {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        legend {
+            font-weight: bold;
+            color: #444;
+        }
+
+        /* label{
+            m
+        } */
+
+        .info {
+            padding: 15px;
+            margin: 15px auto;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            height: 40px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+
+        }
+
+        /* Ajuste para campos pequenos */
+        input[type="number"],
+        input[type="date"] {
+            max-width: 200px;
+        }
+
+        input[type="number"][name="cantico"] {
+            max-width: 60px;
+            text-align: center;
+        }
+
+        footer {
+            display: flex;
+            flex-wrap: wrap;
+            height: 60px;
+            background-color: var(--main-color);
+        }
+    </style>
+</head>
+
+<body>
+    <header style="height: 60px; background-color: var(--main-color);">
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html"> Inicio</a></li>
+            <li><a href="consulta.html">Consultar</a></li>
+            <li><a href="http://">Ajuda</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section>
+            <h2>Formulário de cadastro para Discurso LS Progresso</h2>
+            <form action="cadastrar" method="post" id="cadastroForm">
+                <fieldset class="info">
+                    <legend>Informações sobre o Orador visitante</legend>
+                    <!-- informações pessoais do orador -->
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" placeholder="Digite seu nome">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                    <label for="tel">Tel:</label>
+                    <input type="tel" name="telefone" id="tel" required>
+                    <label for="congregacao">Congregação:</label>
+                    <input type="text" id="cong" name="congregacao">
+                </fieldset>
+                <fieldset class="info">
+                    <legend>Informações sobre o discurso</legend>
+                    <!-- informações sobre o discurso -->
+                    <div id="temas">
+                        <label for="tema">Tema do Discurso:</label>
+                        <input type="text" id="tema" name="tema[]" required>
+                        <label for="cantico">Cântico:</label>
+                        <input type="number" id="cantico" name="cantico[]" style="max-width: 50px; text-align: center;">
+                    </div>
+                    <button type="button" onclick="adicionarTema()">Adicionar outro tema</button>
+
+                </fieldset>
+                <fieldset class="info">
+                    <legend>Selecione o tema</legend>
+                    <label for="tema1">Temas disponiveis</label>
+                    <select name="" id="tema1"></select>
+
+
+                </fieldset>
+                <fieldset class="info">
+                    <legend>Selecione o dia</legend>
+                    <!-- informações sobre o agendamento -->
+                    <label for="dataDiscurso">Data do discurso</label>
+                    <input type="date" name="data_discurso" id="dataDiscurso" required>
+
+                </fieldset>
+                <button type="submit" id="btnSalvar">Salvar</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>software desenvolvido para organizar e planejar discursos</p>
+    </footer>
+    <script>
+        // variaveis global
+        let contador = 1;
+
+        // função para adicionar varios temas
+
+        function adicionarTema() {
+            contador++;
+
+            const divTemas = document.getElementById("temas");
+
+            // Label para o cântico
+            const label_cantico = document.createElement("label");
+            label_cantico.setAttribute("for", "cantico" + contador);
+            label_cantico.textContent = "Cântico " + contador + ":";
+
+            // Label para o tema
+            const label = document.createElement("label");
+            label.setAttribute("for", "tema" + contador);
+            label.textContent = "Tema do Discurso " + contador + ":";
+
+            // Input para o tema
+            const input = document.createElement("input");
+            input.type = "text";
+            input.id = "tema" + contador;
+            input.name = "tema[]";
+
+            // Input para o cântico
+            const input_cantico = document.createElement("input");
+            input_cantico.type = "number";
+            input_cantico.id = "cantico" + contador;
+            input_cantico.name = "cantico[]";
+            input_cantico.setAttribute("style", "max-width: 50px; text-align: center;");
+
+            // Adiciona os elementos ao container
+            divTemas.appendChild(label);
+            divTemas.appendChild(input);
+            divTemas.appendChild(label_cantico);
+            divTemas.appendChild(input_cantico);
+        }
+
+        // salvar os dados do formulario na planilha do google
+        document.getElementById("cadastroForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const btnSalvar = document.getElementById("btnSalvar");
+            const form = event.target;
+
+            //UX: indicador de carregamento;
+            btnSalvar.textContent = "Salvando...";
+            btnSalvar.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+
+                // 1. Formatação dos Temas/Cânticos (Array de Objetos Estruturado)
+                const temasRaw = formData.getAll("tema");
+                const canticosRaw = formData.getAll("cantico");
+                const palestras = []; // Usaremos um array para guardar cada conjunto
+
+                if (temasRaw.length > 0 && temasRaw.length === canticosRaw.length) {
+                    for (let i = 0; i < temasRaw.length; i++) {
+                        palestras.push({
+                            tema: temasRaw[i],
+                            cantico: canticosRaw[i]
+                        });
+                    }
+                }
+
+                // 2. Criação do Objeto de Registro (Schema)
+                const novoRegistro = {
+                    id: Date.now(),
+                    dataCadastro: new Date().toLocaleString("pt-BR"),
+                    nome: formData.get("nome"),
+                    email: formData.get("email"), // Guardando para exportação, se precisar
+                    telefone: formData.get("telefone"), // Guardando para exportação, se precisar
+                    congregacao: formData.get("congregacao"),
+                    dataDiscurso: formData.get("data_discurso"),
+                    palestras: palestras // <-- Agora salvamos um Array real, não um texto colado
+                };
+
+                // 3. Lê o banco atual do LocalStorage (ou cria um array vazio)
+                let bancoDeDados = JSON.parse(localStorage.getItem("bd_discursos")) || [];
+
+                // 4. Insere o novo registro e salva de volta
+                bancoDeDados.push(novoRegistro);
+                localStorage.setItem("bd_discursos", JSON.stringify(bancoDeDados));
+
+                alert("Cadastro salvo com sucesso no banco de dados local!");
+                form.reset();
+
+            } catch (error) {
+                console.error("Erro ao salvar dados:", error);
+                alert("Ocorreu um erro ao salvar o registro.");
+            } finally {
+                btnSalvar.textContent = "Salvar Cadastro Local";
+                btnSalvar.disabled = false;
+            }
+        });
+
+        // informações sobre o discurso -->
+        fetch('data/dados.json').then(response => response.json()).then(data => {
+            const select = document.getElementById('tema1');
+
+            data.forEach(list => {
+                const option = document.createElement('option');
+                option.value = list.id;
+                option.textContent = list.nome;
+                select.appendChild(option);
+            });
+        })
+            .catch(error => console.error('Erro ao carregar o JSON:', error));
+
+    </script>
+
+
+</body>
+
+</html>

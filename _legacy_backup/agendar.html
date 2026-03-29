@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Discurso</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/nav.css">
+    <link rel="stylesheet" href="./css/buttons.css">
+    <style>
+        /* ==========================================
+           CABEÇALHO E NAVEGAÇÃO (HEADER MINIMALISTA)
+           ========================================== */
+        .site-header {
+            background-color: var(--main-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            height: 70px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .site-brand h1 {
+            color: var(--branco);
+            font-size: 1.4em;
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .main-nav a {
+            color: #d1d1d1;
+            text-decoration: none;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: color 0.2s ease, border-bottom 0.2s ease;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .main-nav a:hover,
+        .main-nav a.active {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .main-nav .btn-logout {
+            color: #ff6b6b !important;
+            border: 1px solid #ff6b6b;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .main-nav .btn-logout:hover {
+            background-color: #ff6b6b;
+            color: var(--branco) !important;
+        }
+
+        /* ==========================================
+           ESTRUTURA PRINCIPAL
+           ========================================== */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        main {
+            flex: 1;
+            max-width: 800px;
+            margin: 30px auto;
+            background: var(--bg-container);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-main);
+            margin-bottom: 25px;
+        }
+
+        fieldset {
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+
+        legend {
+            font-weight: bold;
+            color: var(--main-color);
+            padding: 0 10px;
+            font-size: 1.1em;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--text-main);
+            font-size: 0.95em;
+        }
+
+        select,
+        input {
+            width: 100%;
+            height: 42px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+        }
+
+        select:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .linha-curta {
+            display: flex;
+            gap: 15px;
+        }
+
+        .linha-curta>div {
+            flex: 1;
+        }
+
+        button[type="submit"] {
+            background-color: var(--btn-success);
+            width: 100%;
+            margin-top: 15px;
+            height: 45px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--btn-success-hover);
+        }
+
+        /* RODAPÉ (FOOTER) */
+        .site-footer {
+            background-color: var(--main-color);
+            color: #d1d1d1;
+            text-align: center;
+            padding: 20px 15px;
+            margin-top: 40px;
+            font-size: 0.85em;
+            border-top: 3px solid var(--secondary-color);
+        }
+
+        .site-footer p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .footer-links {
+            margin: 10px 0;
+        }
+
+        .footer-links a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+            color: var(--branco);
+        }
+
+        .footer-credit {
+            opacity: 0.6;
+            font-size: 0.8em;
+            margin-top: 10px !important;
+        }
+
+        @media (max-width: 600px) {
+            .site-header {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .main-nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .linha-curta {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Cabeçalho Unificado -->
+    <header class="site-header">
+        <div class="site-brand">
+            <h1>🎙️ Agenda discurso</h1>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="palestrantes.html">Oradores</a></li>
+            <li><a href="agendar.html" class="active">Agendar</a></li>
+            <li><a href="consulta.html">Consultar</a></li>
+            <li><a href="historico.html">Histórico</a></li>
+            <li><a href="#" id="btnSair" class="btn-logout">Sair</a></li>
+        </ul>
+    </nav>
+
+    <main id="conteudoPrincipal" style="display: none;">
+        <h2 id="tituloPagina">Agendar Novo Discurso</h2>
+        <form id="formAgendamento">
+            <fieldset>
+                <legend>Seleção de Orador e Tema</legend>
+
+                <label for="selectPalestrante">Selecione o Orador:</label>
+                <select id="selectPalestrante" name="palestranteId" required>
+                    <option value="">A carregar oradores...</option>
+                </select>
+
+                <label for="selectTema">Selecione o Tema:</label>
+                <select id="selectTema" name="tema" required disabled>
+                    <option value="">Selecione um orador primeiro</option>
+                </select>
+            </fieldset>
+
+            <fieldset>
+                <legend>Detalhes do Agendamento</legend>
+                <div class="linha-curta">
+                    <div>
+                        <label for="dataDiscurso">Data do Discurso:</label>
+                        <input type="date" id="dataDiscurso" name="dataDiscurso" required>
+                    </div>
+                    <div>
+                        <label for="cantico">Cântico Associado:</label>
+                        <input type="number" id="cantico" name="cantico" min="1" max="151" required
+                            placeholder="Ex: 15">
+                    </div>
+                </div>
+            </fieldset>
+
+            <button type="submit" id="btnAgendar">Confirmar Agendamento</button>
+        </form>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Agenda de Discursos. Todos os direitos reservados.</p>
+        <div class="footer-links">
+            <a href="mailto:eduardoborgesferreira@gmail.com?subject=Suporte Agenda">✉️ Contatar Suporte</a>
+            <span>|</span>
+            <a href="#">📖 Ajuda & Documentação</a>
+        </div>
+        <p class="footer-credit">Versão 1.0 (MVP) • Desenvolvido com dedicação para organização congregacional.</p>
+    </footer>
+
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { collection, getDocs, addDoc, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+
+        const auth = getAuth();
+        let palestrantesData = [];
+
+        let isModoEdicao = false;
+        let idDocumentoEdicao = null;
+
+        // 1. GUARDIÃO DE ROTA
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.replace('login.html');
+            } else {
+                document.getElementById('conteudoPrincipal').style.display = 'block';
+                inicializarPagina();
+            }
+        });
+
+        document.getElementById('btnSair').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+        });
+
+        // 2. PREPARAR A PÁGINA
+        async function inicializarPagina() {
+            await carregarPalestrantes();
+
+            const paramsURL = new URLSearchParams(window.location.search);
+            const id = paramsURL.get('id');
+
+            if (id) {
+                isModoEdicao = true;
+                idDocumentoEdicao = id;
+
+                document.getElementById('tituloPagina').textContent = "✏️ Editar Agendamento";
+                document.getElementById('btnAgendar').textContent = "Guardar Alterações";
+                document.getElementById('btnAgendar').style.backgroundColor = "#f0ad4e";
+
+                await preencherFormularioEdicao(id);
+            }
+        }
+
+        async function carregarPalestrantes() {
+            const selectPalestrante = document.getElementById('selectPalestrante');
+            try {
+                const querySnapshot = await getDocs(collection(db, "palestrantes"));
+                palestrantesData = [];
+                selectPalestrante.innerHTML = '<option value="">-- Escolha um orador --</option>';
+
+                const palestrantesOrdenados = [];
+                querySnapshot.forEach((doc) => {
+                    palestrantesOrdenados.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Ordenar alfabeticamente
+                palestrantesOrdenados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+                palestrantesOrdenados.forEach((dados) => {
+                    palestrantesData.push(dados);
+                    const option = document.createElement('option');
+                    option.value = dados.id;
+
+                    // CORREÇÃO DO BUG AQUI: Lida com o novo campo 'congregacaoNome' e o legado 'congregacao'
+                    const nomeCong = dados.congregacaoNome || dados.congregacao || 'Sem Congregação';
+                    option.textContent = `${dados.nome} (${nomeCong})`;
+
+                    selectPalestrante.appendChild(option);
+                });
+            } catch (error) {
+                selectPalestrante.innerHTML = '<option value="">Erro ao carregar oradores</option>';
+            }
+        }
+
+        function atualizarDropdownTemas(palestranteId) {
+            const selectTema = document.getElementById('selectTema');
+            selectTema.innerHTML = '<option value="">-- Escolha o tema --</option>';
+
+            if (!palestranteId) {
+                selectTema.disabled = true;
+                return;
+            }
+
+            const palestranteSelecionado = palestrantesData.find(p => p.id === palestranteId);
+
+            if (palestranteSelecionado && palestranteSelecionado.temas && palestranteSelecionado.temas.length > 0) {
+                palestranteSelecionado.temas.forEach(tema => {
+                    const option = document.createElement('option');
+                    option.value = `Nº ${tema.numero} - ${tema.titulo}`;
+                    option.textContent = `Nº ${tema.numero} - ${tema.titulo}`;
+                    selectTema.appendChild(option);
+                });
+                selectTema.disabled = false;
+            } else {
+                selectTema.innerHTML = '<option value="">Orador sem temas registados</option>';
+                selectTema.disabled = true;
+            }
+        }
+
+        document.getElementById('selectPalestrante').addEventListener('change', (event) => {
+            atualizarDropdownTemas(event.target.value);
+        });
+
+        // 3. MODO EDIÇÃO
+        async function preencherFormularioEdicao(id) {
+            try {
+                const docRef = doc(db, "agendamentos", id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const dados = docSnap.data();
+                    const form = document.getElementById('formAgendamento');
+
+                    form.palestranteId.value = dados.palestranteId;
+                    atualizarDropdownTemas(dados.palestranteId);
+
+                    form.tema.value = dados.temaSelecionado;
+                    form.dataDiscurso.value = dados.dataDiscurso;
+                    form.cantico.value = dados.cantico;
+                } else {
+                    alert("Agendamento não encontrado na base de dados.");
+                    window.location.replace('consulta.html');
+                }
+            } catch (error) {
+                console.error("Erro ao buscar agendamento:", error);
+            }
+        }
+
+        // 4. GRAVAR NO FIREBASE
+        document.getElementById('formAgendamento').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const btnAgendar = document.getElementById('btnAgendar');
+            btnAgendar.textContent = "A comunicar com o Firebase...";
+            btnAgendar.disabled = true;
+
+            const form = event.target;
+            const palestranteId = form.palestranteId.value;
+            const palestranteSelecionado = palestrantesData.find(p => p.id === palestranteId);
+
+            // CORREÇÃO DO BUG AQUI: Busca a congregação certa sem enviar "undefined"
+            const nomeCongregacaoFinal = palestranteSelecionado.congregacaoNome || palestranteSelecionado.congregacao || 'Sem Congregação';
+
+            try {
+                const dadosASalvar = {
+                    palestranteId: palestranteId,
+                    palestranteNome: palestranteSelecionado.nome,
+                    congregacao: nomeCongregacaoFinal, // Campo corrigido
+                    temaSelecionado: form.tema.value,
+                    cantico: parseInt(form.cantico.value),
+                    dataDiscurso: form.dataDiscurso.value,
+                    ultimaAlteracao: new Date().toISOString()
+                };
+
+                if (isModoEdicao) {
+                    const docRef = doc(db, "agendamentos", idDocumentoEdicao);
+                    await updateDoc(docRef, dadosASalvar);
+                    alert("Alterações guardadas com sucesso!");
+                    window.location.replace('consulta.html');
+                } else {
+                    dadosASalvar.dataAgendamento = new Date().toISOString();
+                    await addDoc(collection(db, "agendamentos"), dadosASalvar);
+                    alert("Discurso agendado com sucesso!");
+                    form.reset();
+                    document.getElementById('selectTema').disabled = true;
+                }
+
+            } catch (error) {
+                console.error("Erro ao salvar discurso: ", error);
+                alert("Ocorreu um erro. Verifique a consola do navegador.");
+            } finally {
+                btnAgendar.textContent = isModoEdicao ? "Guardar Alterações" : "Confirmar Agendamento";
+                btnAgendar.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

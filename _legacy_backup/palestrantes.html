@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registar Palestrante</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/nav.css">
+    <link rel="stylesheet" href="./css/buttons.css">
+    <style>
+        /* ==========================================
+           CABEÇALHO E NAVEGAÇÃO (HEADER MINIMALISTA)
+           ========================================== */
+        .site-header {
+            background-color: var(--main-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            height: 70px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .site-brand h1 { color: var(--branco); font-size: 1.4em; margin: 0; font-weight: 400; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        .main-nav ul { list-style: none; display: flex; margin: 0; padding: 0; gap: 25px; align-items: center; }
+        .main-nav a { color: #d1d1d1; text-decoration: none; font-size: 0.95em; font-weight: bold; transition: color 0.2s ease, border-bottom 0.2s ease; padding: 5px 0; border-bottom: 2px solid transparent; }
+        .main-nav a:hover, .main-nav a.active { color: var(--secondary-color); border-bottom: 2px solid var(--secondary-color); }
+        .main-nav .btn-logout { color: #ff6b6b !important; border: 1px solid #ff6b6b; padding: 6px 12px; border-radius: 4px; }
+        .main-nav .btn-logout:hover { background-color: #ff6b6b; color: var(--branco) !important; }
+
+        body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
+        main { flex: 1; max-width: 900px; margin: 30px auto; background: var(--bg-container); padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box; }
+        h2 { text-align: center; color: var(--text-main); margin-bottom: 20px; }
+
+        /* SISTEMA DE ABAS (TABS) */
+        .tabs { display: flex; border-bottom: 2px solid var(--border-light); margin-bottom: 20px; gap: 5px; }
+        .tab-btn { background: transparent; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; border-radius: 6px 6px 0 0; font-weight: bold; color: var(--text-muted); width: auto; margin: 0; transition: background 0.2s;}
+        .tab-btn:hover { background: #f9f9f9; }
+        .tab-btn.active { background: var(--main-color); color: var(--branco); border-bottom: 2px solid var(--main-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* FORMULÁRIOS */
+        fieldset { border: 1px solid var(--border-light); border-radius: 6px; margin-bottom: 25px; padding: 20px; background-color: #fafafa; }
+        legend { font-weight: bold; color: var(--main-color); padding: 0 10px; font-size: 1.1em;}
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+        label { margin-top: 5px; font-weight: bold; color: var(--text-main); font-size: 0.9em; }
+        input, select { width: 100%; height: 42px; margin-top: 8px; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 4px; background-color: #fff; font-size: 15px; transition: border-color 0.2s;}
+        input:focus, select:focus { border-color: var(--secondary-color); outline: none; }
+
+        /* TEMAS */
+        .tema-linha { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
+        .tema-linha .col-tema { flex: 1; }
+        .btn-remover-tema { background-color: transparent; color: var(--btn-danger); border: none; font-size: 1.2em; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; height: 42px; width: 40px; margin: 0; }
+        .btn-remover-tema:hover { color: var(--btn-danger-hover); transform: scale(1.1); }
+
+        /* BOTÕES */
+        button[type="submit"] { background-color: var(--btn-success); width: 100%; margin-top: 10px; height: 45px; font-size: 1.1em; font-weight: bold; border-radius: 6px;}
+        button[type="submit"]:hover { background-color: var(--btn-success-hover); }
+        .btn-secundario { background-color: #f1f1f1; color: #333; border: 1px solid #ccc; width: auto; display: inline-block; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin: 0; font-weight: bold;}
+        .btn-secundario:hover { background-color: #e2e2e2; }
+
+        /* TABELA DE CONGREGAÇÕES */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid var(--border-table); padding: 12px; text-align: left; }
+        th { background-color: var(--main-color); color: var(--branco); }
+        tr:nth-child(even) { background-color: var(--bg-table-even); }
+        .btn-apagar-pequeno { background-color: var(--btn-danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; width: auto; margin: 0; }
+        .btn-apagar-pequeno:hover { background-color: var(--btn-danger-hover); }
+
+        /* RODAPÉ (FOOTER) */
+        .site-footer { background-color: var(--main-color); color: #d1d1d1; text-align: center; padding: 20px 15px; margin-top: 40px; font-size: 0.85em; border-top: 3px solid var(--secondary-color); }
+        .site-footer p { margin: 5px 0; line-height: 1.5; }
+        .footer-links { margin: 10px 0; }
+        .footer-links a { color: var(--secondary-color); text-decoration: none; margin: 0 10px; font-weight: bold; }
+        .footer-links a:hover { text-decoration: underline; color: var(--branco); }
+        .footer-credit { opacity: 0.6; font-size: 0.8em; margin-top: 10px !important; }
+
+        @media (max-width: 768px) {
+            .site-header { flex-direction: column; height: auto; padding: 15px; gap: 15px; }
+            .main-nav ul { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full-width { grid-column: span 1; }
+            .tabs { flex-direction: column; }
+            .tab-btn { border-radius: 4px; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Novo Cabeçalho Unificado -->
+    <header class="site-header">
+        <div class="site-brand">
+            <h1>🎙️ Agenda Discruso</h1>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="palestrantes.html" class="active">Oradores</a></li>
+            <li><a href="agendar.html">Agendar</a></li>
+            <li><a href="consulta.html">Consultar</a></li>
+            <li><a href="historico.html">Histórico</a></li>
+            <li><a href="#" id="btnSair" class="btn-logout">Sair</a></li>
+        </ul>
+    </nav>
+
+    <main id="conteudoPrincipal" style="display: none;">
+        <h2>Gestão de Oradores e Congregações</h2>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-target="tab-oradores">👤 Cadastrar Orador</button>
+            <button class="tab-btn" data-target="tab-congregacoes">🏛️ Congregações e Contatos</button>
+        </div>
+
+        <div id="tab-oradores" class="tab-content active">
+            <form id="formPalestrante">
+                <fieldset>
+                    <legend id="legendOrador">1. Dados Pessoais do Orador</legend>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="nome">Nome Completo:</label>
+                            <input type="text" id="nome" name="nome" required placeholder="Ex: Eduardo Borges">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone">Telefone (WhatsApp):</label>
+                            <input type="tel" id="telefone" name="telefone" required placeholder="Ex: 31999999999">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail (Opcional):</label>
+                            <input type="email" id="email" name="email" placeholder="Ex: ebf@email.com">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>2. Formato do Discurso</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="modalidade">Disponibilidade (Local/Zoom):</label>
+                            <select id="modalidade" name="modalidade" required>
+                                <option value="Presencial ou Zoom">Presencial ou Zoom (Flexível)</option>
+                                <option value="Somente Presencial">Somente Presencial</option>
+                                <option value="Somente Zoom">Somente via Zoom (Fora da Região)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="idioma">Idioma Principal:</label>
+                            <select id="idioma" name="idioma" required>
+                                <option value="Português">Português</option>
+                                <option value="Libras">Libras (Língua de Sinais)</option>
+                                <option value="Espanhol">Espanhol</option>
+                                <option value="Inglês">Inglês</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>3. Congregação de Origem</legend>
+                    <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
+                        Nota: Selecione a congregação abaixo. Se a congregação não existir, adicione-a primeiro na aba "Congregações e Contatos".
+                    </p>
+                    <div class="form-group full-width">
+                        <label for="selectCongregacao">Selecione a Congregação:</label>
+                        <select id="selectCongregacao" name="congregacaoId" required>
+                            <option value="">A carregar congregações...</option>
+                        </select>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>4. Temas Habilitados</legend>
+                    <div id="containerTemas">
+                        <div class="tema-linha">
+                            <div class="col-tema">
+                                <label>Selecione o Tema</label>
+                                <select name="temaSelecionado[]" required class="select-tema-dinamico">
+                                    <option value="">A carregar temas oficiais...</option>
+                                </select>
+                            </div>
+                            <div style="width: 40px;"></div> 
+                        </div>
+                    </div>
+                    <button type="button" class="btn-secundario" id="btnAdicionarTema">+ Adicionar outro tema</button>
+                </fieldset>
+
+                <button type="submit" id="btnSalvarOrador">Salvar Orador</button>
+            </form>
+        </div>
+
+        <div id="tab-congregacoes" class="tab-content">
+            <form id="formCongregacao">
+                <fieldset>
+                    <legend>Adicionar Nova Congregação</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nomeCongregacao">Nome da Congregação:</label>
+                            <input type="text" id="nomeCongregacao" name="nome" required placeholder="Ex: LS Progresso">
+                        </div>
+                        <div class="form-group">
+                            <label for="cidadeCongregacao">Cidade/Estado:</label>
+                            <input type="text" id="cidadeCongregacao" name="cidade" required placeholder="Ex: Conselheiro Lafaiete - MG">
+                        </div>
+                        <div class="form-group">
+                            <label for="nomeCoordenador">Coordenador (Arranjos):</label>
+                            <input type="text" id="nomeCoordenador" name="coordenador" required placeholder="Ex: Samuel Gomes">
+                        </div>
+                        <div class="form-group">
+                            <label for="telCoordenador">Contato do Coordenador:</label>
+                            <input type="tel" id="telCoordenador" name="telefone" required placeholder="Ex: 31991406137">
+                        </div>
+                    </div>
+                    <button type="submit" id="btnSalvarCongregacao" style="margin-top: 15px;">Adicionar Congregação</button>
+                </fieldset>
+            </form>
+
+            <h3>Congregações Cadastradas</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Congregação</th>
+                            <th>Cidade</th>
+                            <th>Responsável</th>
+                            <th>Contato</th>
+                            <th style="width: 60px;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaCongregacoes">
+                        <tr><td colspan="5" style="text-align: center;">A carregar dados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Agenda de Discursos. Todos os direitos reservados.</p>
+        <div class="footer-links">
+            <a href="mailto:eduardoborgesferreira@gmail.com?subject=Suporte Agenda">✉️ Contatar Suporte</a>
+            <span>|</span>
+            <a href="#">📖 Ajuda & Documentação</a>
+        </div>
+        <p class="footer-credit">Versão 1.0 (MVP) • Desenvolvido com dedicação para organização congregacional.</p>
+    </footer>
+
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        // Aqui está o Doc, getDoc e updateDoc importados para ler e editar.
+        import { collection, addDoc, query, where, getDocs, doc, deleteDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+        import { temasFormatados } from './js/temas.js';
+
+        const auth = getAuth();
+        let congregacoesGlobais = []; 
+        
+        // VARIÁVEIS DE CONTROLE DO MODO EDIÇÃO
+        let isModoEdicao = false;
+        let idDocumentoEdicao = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.replace('login.html');
+            } else {
+                document.getElementById('conteudoPrincipal').style.display = 'block';
+                popularSelectTema(document.querySelector('.select-tema-dinamico'));
+                await carregarCongregacoes(); 
+                
+                // Assim que a página carrega, ele verifica se tem ID na URL
+                verificarModoEdicao();
+            }
+        });
+
+        document.getElementById('btnSair').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+        });
+
+        // ==========================================
+        // LÓGICA DE ABAS (TABS)
+        // ==========================================
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                button.classList.add('active');
+                const targetId = button.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+
+        // ==========================================
+        // LÓGICA DA ABA 2: CONGREGAÇÕES E CONTATOS
+        // ==========================================
+        document.getElementById('formCongregacao').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const btnSalvar = document.getElementById('btnSalvarCongregacao');
+            btnSalvar.textContent = "A salvar...";
+            btnSalvar.disabled = true;
+
+            const form = event.target;
+            const nomeCongregacao = form.nome.value.trim();
+
+            try {
+                const congregacoesRef = collection(db, "congregacoes");
+                const queryNome = query(congregacoesRef, where("nome", "==", nomeCongregacao));
+                const snapNome = await getDocs(queryNome);
+                
+                if (!snapNome.empty) {
+                    alert(`A congregação "${nomeCongregacao}" já existe!`);
+                    return; 
+                }
+
+                await addDoc(congregacoesRef, {
+                    nome: nomeCongregacao,
+                    cidade: form.cidade.value.trim(),
+                    coordenador: form.coordenador.value.trim(),
+                    telefone: form.telefone.value.trim()
+                });
+                
+                alert("Congregação adicionada com sucesso!");
+                form.reset();
+                await carregarCongregacoes(); 
+
+            } catch (error) {
+                console.error("Erro ao salvar congregação:", error);
+                alert("Erro ao conectar com o banco de dados.");
+            } finally {
+                btnSalvar.textContent = "Adicionar Congregação";
+                btnSalvar.disabled = false;
+            }
+        });
+
+        async function carregarCongregacoes() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "congregacoes"));
+                congregacoesGlobais = [];
+                
+                querySnapshot.forEach((doc) => {
+                    congregacoesGlobais.push({ id: doc.id, ...doc.data() });
+                });
+
+                congregacoesGlobais.sort((a, b) => a.nome.localeCompare(b.nome));
+
+                renderizarTabelaCongregacoes();
+                atualizarDropdownCongregacoes();
+
+            } catch (error) {
+                console.error("Erro ao carregar congregações:", error);
+            }
+        }
+
+        function renderizarTabelaCongregacoes() {
+            const tbody = document.getElementById("tabelaCongregacoes");
+            tbody.innerHTML = "";
+
+            if (congregacoesGlobais.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">Nenhuma congregação registada. Adicione uma acima.</td></tr>';
+                return;
+            }
+
+            congregacoesGlobais.forEach(cong => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escaparHTML(cong.nome)}</strong></td>
+                    <td>${escaparHTML(cong.cidade)}</td>
+                    <td>${escaparHTML(cong.coordenador)}</td>
+                    <td>${escaparHTML(cong.telefone)}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-apagar-pequeno btn-apagar-cong" data-id="${cong.id}">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarDropdownCongregacoes() {
+            const select = document.getElementById("selectCongregacao");
+            select.innerHTML = '<option value="">-- Escolha a Congregação --</option>';
+
+            congregacoesGlobais.forEach(cong => {
+                const option = document.createElement('option');
+                option.value = cong.id; 
+                option.textContent = `${cong.nome} (${cong.cidade})`;
+                select.appendChild(option);
+            });
+        }
+
+        document.getElementById('tabelaCongregacoes').addEventListener('click', async (event) => {
+            const btn = event.target.closest('.btn-apagar-cong');
+            if (!btn) return;
+
+            const idDoc = btn.getAttribute('data-id');
+            if (confirm("Deseja apagar esta congregação? Oradores ligados a ela manterão o nome guardado como histórico.")) {
+                await deleteDoc(doc(db, "congregacoes", idDoc));
+                await carregarCongregacoes();
+            }
+        });
+
+
+        // ==========================================
+        // LÓGICA DA ABA 1: ORADORES E TEMAS
+        // ==========================================
+        
+        function popularSelectTema(selectElement) {
+            selectElement.innerHTML = '<option value="">-- Escolha o Tema na Lista --</option>';
+            temasFormatados.forEach(tema => {
+                const option = document.createElement('option');
+                option.value = `${tema.numero}|${tema.titulo}`;
+                option.textContent = `Nº ${tema.numero} - ${tema.titulo}`;
+                selectElement.appendChild(option);
+            });
+        }
+
+        document.getElementById('btnAdicionarTema').addEventListener('click', () => {
+            const container = document.getElementById('containerTemas');
+            const novaLinha = document.createElement('div');
+            novaLinha.className = 'tema-linha';
+            novaLinha.innerHTML = `
+                <div class="col-tema">
+                    <select name="temaSelecionado[]" required class="select-tema-dinamico">
+                    </select>
+                </div>
+                <button type="button" class="btn-remover-tema" title="Remover este tema">❌</button>
+            `;
+            popularSelectTema(novaLinha.querySelector('select'));
+            container.appendChild(novaLinha);
+        });
+
+        document.getElementById('containerTemas').addEventListener('click', (event) => {
+            if (event.target.classList.contains('btn-remover-tema')) {
+                event.target.closest('.tema-linha').remove();
+            }
+        });
+
+        // ==========================================
+        // ESTA É A FUNÇÃO QUE LÊ A URL E PREENCHE O FORMULÁRIO (MODO EDIÇÃO)
+        // ==========================================
+        async function verificarModoEdicao() {
+            const paramsURL = new URLSearchParams(window.location.search);
+            const id = paramsURL.get('id');
+
+            if (id) {
+                isModoEdicao = true;
+                idDocumentoEdicao = id;
+                
+                // Mudar a interface para avisar o utilizador que está a editar
+                document.getElementById('legendOrador').textContent = "✏️ Editar Dados do Orador";
+                const btnSalvar = document.getElementById('btnSalvarOrador');
+                btnSalvar.textContent = "Guardar Alterações";
+                btnSalvar.style.backgroundColor = "#f0ad4e"; 
+
+                try {
+                    const docSnap = await getDoc(doc(db, "palestrantes", id));
+                    if (docSnap.exists()) {
+                        const dados = docSnap.data();
+                        const form = document.getElementById('formPalestrante');
+                        
+                        // Preenche os campos de texto e selects do HTML
+                        form.nome.value = dados.nome;
+                        form.telefone.value = dados.telefone;
+                        form.email.value = dados.email || '';
+                        form.modalidade.value = dados.modalidade || 'Presencial ou Zoom';
+                        form.idioma.value = dados.idioma || 'Português';
+                        form.congregacaoId.value = dados.congregacaoId;
+
+                        // Preencher os temas dinâmicos no formulário
+                        const containerTemas = document.getElementById('containerTemas');
+                        containerTemas.innerHTML = ""; // Limpa a linha inicial
+                        
+                        if (dados.temas && dados.temas.length > 0) {
+                            dados.temas.forEach((tema, index) => {
+                                const novaLinha = document.createElement('div');
+                                novaLinha.className = 'tema-linha';
+                                
+                                // O primeiro tema não tem botão de apagar
+                                const btnRemover = index === 0 ? '<div style="width: 40px;"></div>' : '<button type="button" class="btn-remover-tema" title="Remover este tema">❌</button>';
+                                
+                                novaLinha.innerHTML = `
+                                    <div class="col-tema">
+                                        <select name="temaSelecionado[]" required class="select-tema-dinamico"></select>
+                                    </div>
+                                    ${btnRemover}
+                                `;
+                                
+                                const selectElement = novaLinha.querySelector('select');
+                                popularSelectTema(selectElement);
+                                // Seleciona automaticamente o tema que veio da base de dados
+                                selectElement.value = `${tema.numero}|${tema.titulo}`;
+                                containerTemas.appendChild(novaLinha);
+                            });
+                        } else {
+                            document.getElementById('btnAdicionarTema').click();
+                        }
+                    } else {
+                        alert("Orador não encontrado na base de dados.");
+                        window.location.href = 'consulta.html';
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar orador para edição:", error);
+                }
+            }
+        }
+
+
+        // GRAVAR ORADOR (Atualizado para lidar com Criar e Editar)
+        document.getElementById('formPalestrante').addEventListener('submit', async (event) => {
+            event.preventDefault(); 
+            
+            const btnSalvar = document.getElementById('btnSalvarOrador');
+            btnSalvar.textContent = "A comunicar com o Firebase...";
+            btnSalvar.disabled = true;
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const nomeDigitado = formData.get('nome').trim();
+            const emailDigitado = formData.get('email').trim();
+            const congregacaoIdSelecionada = formData.get('congregacaoId');
+
+            try {
+                const palestrantesRef = collection(db, "palestrantes");
+                
+                // Validação contra nomes duplicados (Ignora se já estivermos a editar o próprio orador)
+                if (!isModoEdicao) {
+                    const queryNome = query(palestrantesRef, where("nome", "==", nomeDigitado));
+                    const snapNome = await getDocs(queryNome);
+                    
+                    if (!snapNome.empty) {
+                        alert(`O orador "${nomeDigitado}" já está registado!`);
+                        btnSalvar.textContent = "Salvar Orador no Firebase";
+                        btnSalvar.disabled = false;
+                        return; 
+                    }
+                }
+
+                const congregacaoSelecionada = congregacoesGlobais.find(c => c.id === congregacaoIdSelecionada);
+
+                const temasSelecionadosBrutos = formData.getAll('temaSelecionado[]');
+                const temasProcessados = [];
+
+                for (let i = 0; i < temasSelecionadosBrutos.length; i++) {
+                    const [numeroTema, tituloTema] = temasSelecionadosBrutos[i].split('|');
+                    temasProcessados.push({ numero: parseInt(numeroTema), titulo: tituloTema });
+                }
+
+                const dadosOrador = {
+                    nome: nomeDigitado,
+                    telefone: formData.get('telefone').trim(),
+                    email: emailDigitado,
+                    congregacaoId: congregacaoSelecionada.id,
+                    congregacaoNome: congregacaoSelecionada.nome,
+                    cidadeOrador: congregacaoSelecionada.cidade,
+                    modalidade: formData.get('modalidade'), 
+                    idioma: formData.get('idioma'),         
+                    temas: temasProcessados,
+                };
+
+                // A DECISÃO PRINCIPAL ACONTECE AQUI
+                if (isModoEdicao) {
+                    // ATUALIZAR
+                    dadosOrador.ultimaAtualizacao = new Date().toISOString();
+                    await updateDoc(doc(db, "palestrantes", idDocumentoEdicao), dadosOrador);
+                    alert(`Sucesso! As alterações de ${nomeDigitado} foram guardadas.`);
+                    window.location.href = 'consulta.html'; // Volta para a página de consultas
+
+                } else {
+                    // CRIAR NOVO
+                    dadosOrador.dataCadastro = new Date().toISOString();
+                    await addDoc(palestrantesRef, dadosOrador);
+                    alert(`Sucesso! Orador ${nomeDigitado} registado.`);
+                    
+                    // Limpa o formulário após criar
+                    form.reset(); 
+                    const containerTemas = document.getElementById('containerTemas');
+                    while (containerTemas.children.length > 1) {
+                        containerTemas.removeChild(containerTemas.lastChild);
+                    }
+                    popularSelectTema(document.querySelector('.select-tema-dinamico'));
+                }
+
+            } catch (error) {
+                console.error("Erro ao guardar documento: ", error);
+                alert("Ocorreu um erro ao comunicar com a base de dados.");
+            } finally {
+                btnSalvar.textContent = isModoEdicao ? "Guardar Alterações" : "Salvar Orador no Firebase";
+                btnSalvar.disabled = false;
+            }
+        });
+
+        function escaparHTML(texto) {
+            if (!texto) return "";
+            const div = document.createElement('div');
+            div.textContent = texto;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
