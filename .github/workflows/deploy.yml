@@ -20,12 +20,14 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Instalar Dependências 📦
-        # Usamos install em vez de ci para maior compatibilidade inicial
-        run: npm install
+      - name: Limpar e Instalar Dependências 📦
+        # O comando 'npm install' no Linux vai detetar que precisa do binário gnu-x64
+        # Adicionamos a flag --include=dev para garantir que o Vite e Tailwind funcionam
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --include=dev
 
       - name: Build do Projeto (Vite) 🏗️
-        # Adicionamos o comando para gerar os ficheiros de produção
         run: npm run build
 
       - name: Deploy para GitHub Pages 🚀
