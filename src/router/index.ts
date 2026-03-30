@@ -4,7 +4,7 @@ import DashboardView from '../views/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
-  history: createWebHistory('/agenda-discursos/'),
+  history: createWebHistory('/manager-discurso/'),
   routes: [
     { path: '/login', name: 'login', component: LoginView },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },
